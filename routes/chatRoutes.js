@@ -1,9 +1,14 @@
 const router = require("express").Router();
 
-// Controller
-const { createChat, createMessage } = require("../controller/chatController");
+// Controllers
+const {
+  createChat,
+  createMessage,
+  blockChat,
+} = require("../controller/chatController");
 
 router.post("/", createChat);
 router.post("/create/message", createMessage);
+router.patch("/block", blockChat);
 
 module.exports = router;
