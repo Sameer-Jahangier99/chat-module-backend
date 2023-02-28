@@ -24,14 +24,14 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const { first_name, last_name, email, password } = value;
 
-  const userExist = findUserByEmail(email);
+  const userExist = await findUserByEmail(email);
 
   if (userExist) {
     res.status(400);
     throw new Error("Email is already registered");
   }
 
-  const newUser = createUser(first_name, last_name, email, password );
+  const newUser = await createUser(first_name, last_name, email, password );
 
   //   ? response
   if (newUser) {
@@ -64,7 +64,7 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   const { email, password } = value;
-  const userExist = findUserByEmail(email);
+  const userExist = await findUserByEmail(email);
 
   if (userExist && (await userExist.matchPassword(password))) {
     res.status(200).json({

@@ -9,6 +9,9 @@ const createChatRoom = async (sender = "", reciever = "") =>
     reciever,
   });
 
+const allMessages = async (chatId, userId) =>
+  Chat.findOne({ _id: chatId, $not: { "messages.deletedBy": userId } }); 
+
 const insertMessageIntoChat = async (
   _id = "",
   sender = "",
@@ -37,22 +40,25 @@ const getLastMessage = async (_id) =>
 const updateChatRoomBlockStatus = async (_id, isBlocked) =>
   await Chat.findOneAndUpdate({ _id }, { $set: { isBlocked: isBlocked } });
 
-const findMessageById = async (_id, messageId) =>
-  await Chat.findOne({
-    _id,
-    messages: { $elemMatch: { _id: messageId } },
-  });
+const findMessageById = async (_id, messageId) => {
+  const message = await Chat.findOne(
+    { _id, "messages._id": messageId },
+    { "messages.$": 1 }
+  ).exec();
 
-const deleteMessage = async (_id, messageId) =>
+  return message?.messages[0];
+};
+
+const deleteSelectedMessage = async (_id, messageId) =>
   await Chat.updateOne({ _id }, { $pull: { messages: { _id: messageId } } });
 
-const updateMessageDeleteStatus = async (_id, messageId) =>
+const updateMessageDeleteStatus = async (_id, messageId, deleted, deletedBy) =>
   await Chat.updateOne(
     { _id, "messages._id": messageId },
     {
       $set: {
-        "OrderItems.$.imgUrl": imgUrl[0],
-
+        "messages.$.deleted": deleted,
+        "messages.$.deletedBy": deletedBy,
       },
     },
     { upsert: false }
@@ -65,5 +71,7 @@ module.exports = {
   getLastMessage,
   updateChatRoomBlockStatus,
   findMessageById,
-  deleteMessage,
+  deleteSelectedMessage,
+  updateMessageDeleteStatus,
+  allMessages,
 };
